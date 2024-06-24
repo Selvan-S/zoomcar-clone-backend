@@ -101,17 +101,20 @@ const storeItems = new Map([
     { pricePerHour: 1, name: "testing", hostCarImage: [] },
   ],
 ]);
+
+// Create Stripe Payment
 const createPayment = async (req, res, next) => {
   const vehicleId = req.params.id;
   const { startDate, endDate, startTime, endTime, tripProtectionFee } =
     req.body;
-  console.log(startDate, endDate, startTime, endTime, tripProtectionFee);
+
   try {
     const vehicle = await Vehicle.findById(vehicleId);
     if (!vehicle || !vehicle.availability) {
       return next(new ErrorResponse("Vehicle not available", 400));
     }
 
+    // Creates a payment session for which the product data and total price we provided
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -129,7 +132,10 @@ const createPayment = async (req, res, next) => {
           quantity: 1,
         };
       }),
-      success_url: `${process.env.CLIENT_URL}`,
+      // On success, redirect to user bookings page
+      success_url: `${process.env.CLIENT_URL}/user/bookings`,
+      // On cancel, redirect to vehicle details,
+      // in which the vehicle the user tried to make payment
       cancel_url: `${process.env.CLIENT_URL}/vehicle/details/${vehicleId}`,
     });
 

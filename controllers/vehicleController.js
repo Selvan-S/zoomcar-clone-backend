@@ -1,5 +1,7 @@
+const User = require("../models/User");
 const Vehicle = require("../models/Vehicle");
 const ErrorResponse = require("../utils/errorResponse");
+const { default: mongoose } = require("mongoose");
 
 // Create a new vehicle (Admin)
 const createVehicle = async (req, res, next) => {
@@ -69,6 +71,8 @@ const getVehicles = async (req, res, next) => {
     pipeline.unshift({ $match: {} });
   }
 
+  pipeline.push();
+
   // https://mongoplayground.net/p/qOXMeM_-yl6
 
   const filter = await Vehicle.aggregate(pipeline);
@@ -83,11 +87,31 @@ const getVehicles = async (req, res, next) => {
 // Get a single vehicle by ID
 const getVehicleById = async (req, res, next) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id);
-    if (!vehicle) {
+    let pipeline = [
+      {
+        $match: {
+          _id: mongoose.Types.ObjectId.createFromHexString(req.params.id),
+        },
+      },
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "vehicle",
+          as: "reviews",
+        },
+      },
+    ];
+    const vehicle = await Vehicle.aggregate(pipeline);
+    if (!vehicle.length) {
       return res.status(404).json({ msg: "Vehicle not found" });
     }
-    res.status(200).json(vehicle);
+    const populateUser = await User.populate(vehicle[0], {
+      path: "reviews.user",
+      select: "-password",
+      strictPopulate: false,
+    });
+    res.status(200).json(populateUser);
   } catch (err) {
     next(new ErrorResponse("Server error", 500));
   }

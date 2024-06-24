@@ -4,9 +4,11 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const imgur = require("imgur");
 
+// Reads the upload paths in uploads folder
 function createReadStream(uploadPath) {
   return fs.createReadStream(uploadPath);
 }
+// Upload file to imgur and response the file link
 async function imgurUplodeFile(uploadPath, res) {
   const client = new imgur.ImgurClient({
     clientId: process.env.IMGUR_CLIENT_ID,
@@ -18,7 +20,7 @@ async function imgurUplodeFile(uploadPath, res) {
   fs.unlinkSync(uploadPath);
   res.status(200).json({ link: response.data.link });
 }
-
+// Upload Profile Picture to imgur (Note: Avoid uploading sensitive or personal photos unless you intend for them to be shared on Imgur.)
 const uploadImg = async (req, res) => {
   if (!req.files) {
     return res.status(400).send("No files were uploaded.");
@@ -35,13 +37,14 @@ const uploadImg = async (req, res) => {
   });
 };
 
+// Updates user details
 const updateUserDetails = async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    
+
     if (req.body.userAvatarLink) {
       user.userAvatarLink = req.body.userAvatarLink;
     }
@@ -65,12 +68,12 @@ const updateUserDetails = async (req, res) => {
   }
 };
 
+// Forgot password
 const forgotPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    res.status(404);
-    throw new Error("User not found");
+    return res.status(404).json({ error: "User not found" });
   }
 
   const resetToken = crypto.randomBytes(20).toString("hex");
@@ -83,11 +86,12 @@ const forgotPassword = async (req, res) => {
 
   await user.save();
 
-  const resetUrl = `http://localhost:${process.env.PORT}/passwordreset/${resetToken}`;
+  // Reset url, client side password reset form route
+  const resetUrl = `${process.env.CLIENT_URL}/passwordreset/${resetToken}`;
 
   const message = `
-    <h1>You have requested a password reset</h1>
-    <p>Please make a PUT request to the following link:</p>
+    <h3>You have requested a password reset</h3>
+    <p>Click on the reset link, it will redirects to password reset page:</p>
     <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
   `;
 
@@ -99,22 +103,32 @@ const forgotPassword = async (req, res) => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
+    console.log(transporter.options);
 
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Password Reset Request",
-      html: message,
-    });
-
-    res.status(200).json({ success: true, data: "Email sent" });
+    console.log("created");
+    transporter.sendMail(
+      {
+        from: process.env.EMAIL_USERNAME,
+        to: user.email,
+        subject: "Zoomcar clone - Password Reset Request",
+        html: message,
+      },
+      (error, info) => {
+        if (error) {
+          console.log("Error: ", error);
+          return res.status(500).json({ error: "Email could not be sent" });
+        }
+        console.log("Message %s sent: %s", info.messageId, info.response);
+        res.status(200).json({ success: true, data: "Email sent" });
+      }
+    );
   } catch (err) {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
     await user.save();
 
-    res.status(500);
-    throw new Error("Email could not be sent");
+    res.status(500).json({ error: "Email could not be sent" });
   }
 };
 
