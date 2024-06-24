@@ -8,7 +8,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const fileUpload = require("express-fileupload");
-
+const webhookEndpoint = require("./routes/webhookEndpoint");
 const { notFound } = require("./middleware/errorMiddleware");
 const connectDB = require("./config/db");
 const { config } = require("dotenv");
@@ -34,6 +34,8 @@ app.use("/api/v1/vehicles", vehicleRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1", webhookEndpoint);
+
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);

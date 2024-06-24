@@ -17,6 +17,18 @@ const createPayment = async (req, res, next) => {
       return next(new ErrorResponse("Vehicle not available", 400));
     }
 
+    const booking = new Booking({
+      vehicle: vehicleId,
+      user: req.user._id,
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      tripProtectionFee,
+      totalPrice: req.body.items[0].totalPrice,
+      paymentStatus: "pending", // Set status to pending initially
+    });
+
     // Creates a payment session for which the product data and total price we provided
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -39,24 +51,10 @@ const createPayment = async (req, res, next) => {
       // On cancel, redirect to vehicle details,
       // in which the vehicle where user tried to make payment
       cancel_url: `${process.env.CLIENT_URL}/vehicle/details/${vehicleId}`,
-    });
-
-    const booking = new Booking({
-      vehicle: vehicleId,
-      user: req.user._id,
-      startDate,
-      endDate,
-      startTime,
-      endTime,
-      tripProtectionFee,
-      totalPrice: req.body.items[0].totalPrice,
+      metadata: { bookingId: booking._id.toString() }, // Pass the booking ID to Stripe session
     });
 
     await booking.save();
-
-    // Update vehicle availability
-    vehicle.availability = false;
-    await vehicle.save();
 
     res.json({ id: session.id });
   } catch (error) {
