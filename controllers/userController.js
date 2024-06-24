@@ -4,11 +4,11 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const imgur = require("imgur");
 
-// Reads the upload paths in uploads folder
+// Reads the upload paths in uploads folder (Not working in Render)
 function createReadStream(uploadPath) {
   return fs.createReadStream(uploadPath);
 }
-// Upload file to imgur and response the file link
+// Upload file to imgur and response the file link (Not working in Render)
 async function imgurUplodeFile(uploadPath, res) {
   const client = new imgur.ImgurClient({
     clientId: process.env.IMGUR_CLIENT_ID,
@@ -21,6 +21,8 @@ async function imgurUplodeFile(uploadPath, res) {
   res.status(200).json({ link: response.data.link });
 }
 // Upload Profile Picture to imgur (Note: Avoid uploading sensitive or personal photos unless you intend for them to be shared on Imgur.)
+// (Not working in Render)
+// So, uploading images is handled in Frontend.
 const uploadImg = async (req, res) => {
   if (!req.files) {
     return res.status(400).send("No files were uploaded.");
