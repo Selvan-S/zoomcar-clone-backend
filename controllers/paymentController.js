@@ -39,7 +39,6 @@ const createPayment = async (req, res, next) => {
             currency: "INR",
             product_data: {
               name: item.name,
-              images: item.hostCarImage,
             },
             unit_amount: Math.round(item.totalPrice * 100),
           },
