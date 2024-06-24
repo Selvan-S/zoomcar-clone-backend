@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const Vehicle = require("../models/Vehicle");
 const Booking = require("../models/Booking");
+require("dotenv").config();
 
 const webhookEndpoint = express.Router();
 
@@ -11,7 +12,7 @@ webhookEndpoint.post(
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
-
+    console.log("inside webhook");
     try {
       event = stripe.webhooks.constructEvent(
         req.body,
