@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-!controllers\uploads
+!controllers/uploads
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
