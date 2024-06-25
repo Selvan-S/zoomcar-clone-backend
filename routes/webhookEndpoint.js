@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const Vehicle = require("../models/Vehicle");
 const Booking = require("../models/Booking");
 require("dotenv").config();
-
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const webhookEndpoint = express.Router();
 
 webhookEndpoint.post(
