@@ -28,13 +28,13 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.use("/api/v1", webhookEndpoint);
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/vehicles", vehicleRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
-app.use("/api/v1/payment", paymentRoutes);
-app.use("/api/v1", webhookEndpoint);
 
 // Error Handling Middleware
 app.use(notFound);

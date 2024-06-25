@@ -1,5 +1,4 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const Vehicle = require("../models/Vehicle");
 const Booking = require("../models/Booking");
 require("dotenv").config();
@@ -8,7 +7,7 @@ const webhookEndpoint = express.Router();
 
 webhookEndpoint.post(
   "/webhook",
-  bodyParser.raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
