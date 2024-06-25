@@ -18,6 +18,8 @@ const app = express();
 // Connect to database
 connectDB();
 
+app.use("/api/v1", webhookEndpoint);
+
 // Middleware
 app.use(fileUpload());
 app.use(express.json());
@@ -28,7 +30,6 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/api/v1", webhookEndpoint);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/user", userRoutes);
