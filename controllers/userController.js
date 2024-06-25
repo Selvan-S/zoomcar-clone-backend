@@ -96,7 +96,7 @@ const forgotPassword = async (req, res) => {
     <p>Click on the reset link, it will redirects to password reset page:</p>
     <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
   `;
-
+// Sent password rest link email to the registered user
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -105,9 +105,7 @@ const forgotPassword = async (req, res) => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
-    console.log(transporter.options);
 
-    console.log("created");
     transporter.sendMail(
       {
         from: process.env.EMAIL_USERNAME,
@@ -134,6 +132,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// Reset password controller
 const resetPassword = async (req, res) => {
   const resetPasswordToken = crypto
     .createHash("sha256")

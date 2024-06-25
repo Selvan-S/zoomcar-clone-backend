@@ -11,7 +11,6 @@ const registerUser = async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ error: "name, email and password required" });
   }
-  console.log(name, email, password);
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {

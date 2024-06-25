@@ -18,10 +18,11 @@ const app = express();
 // Connect to database
 connectDB();
 
+// Webhook for stripe
 app.use("/api/v1", webhookEndpoint);
 
 // Middleware
-app.use(fileUpload());
+app.use(fileUpload()); // Not working in render. just for reference.
 app.use(express.json());
 app.use(cors());
 app.use((req, res, next) => {
