@@ -19,10 +19,17 @@ webhookEndpoint.post(
         sig,
         process.env.STRIPE_WEBHOOK_SECRET
       );
+      console.log(event);
     } catch (err) {
+      console.log(`Webhook Error: ${err.message}`);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-    console.log("done first trycatch ", process.env.STRIPE_WEBHOOK_SECRET);
+    console.log(
+      "done first trycatch ",
+      process.env.STRIPE_WEBHOOK_SECRET,
+      "event.type",
+      event.type
+    );
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
