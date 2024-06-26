@@ -17,6 +17,41 @@ const createPayment = async (req, res, next) => {
       return next(new ErrorResponse("Vehicle not available", 400));
     }
 
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+
+    const pipeline = [
+      {
+        $match: {
+          $and: [
+            {
+              vehicle: vehicle._id,
+            },
+            {
+              paymentStatus: "confirmed",
+            },
+          ],
+          $or: [
+            {
+              startTime: {
+                $lte: end,
+              },
+              endTime: {
+                $gte: start,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const conflictBookings = await Booking.aggregate(pipeline);
+
+    if (conflictBookings.length > 0) {
+      return res.json({
+        error: "The vehicle is already booked during the selected time range",
+      });
+    }
     const booking = new Booking({
       vehicle: vehicleId,
       user: req.user._id,

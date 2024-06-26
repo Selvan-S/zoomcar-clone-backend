@@ -11,7 +11,7 @@ webhookEndpoint.post(
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
-    
+
     try {
       event = stripe.webhooks.constructEvent(
         req.body,
@@ -38,13 +38,6 @@ webhookEndpoint.post(
         // Update the booking status to confirmed
         booking.paymentStatus = "confirmed";
         await booking.save();
-
-        // Update vehicle availability
-        const vehicle = await Vehicle.findById(booking.vehicle);
-        if (vehicle) {
-          vehicle.availability = false;
-          await vehicle.save();
-        }
       } catch (err) {
         console.error("Failed to update booking or vehicle:", err);
         return res.status(500).send(`Webhook Error: ${err.message}`);

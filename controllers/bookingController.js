@@ -37,10 +37,6 @@ const createBooking = async (req, res) => {
 
     await booking.save();
 
-    // Update vehicle availability
-    vehicle.availability = false;
-    await vehicle.save();
-
     res.status(201).json(booking);
   } catch (error) {
     next(new ErrorResponse("Server error", 500));
@@ -61,9 +57,6 @@ const updateBooking = async (req, res, next) => {
       const booking = await Booking.findByIdAndUpdate(BookingId, {
         $set: { status },
       });
-      // Update vehicle availability
-      vehicle.availability = true;
-      await vehicle.save();
 
       res.status(201).json(booking);
     } catch (error) {
