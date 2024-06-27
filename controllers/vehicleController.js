@@ -3,6 +3,22 @@ const Vehicle = require("../models/Vehicle");
 const ErrorResponse = require("../utils/errorResponse");
 const { default: mongoose } = require("mongoose");
 
+// Get all vehicles. Get vehicles by query.
+const getAllVehicles = async (req, res, next) => {
+  const { vehicleName } = req.query;
+  try {
+    const vehicles = await Vehicle.find({
+      name: { $regex: vehicleName, $options: "i" },
+    });
+    if (!vehicles.length) {
+      return res.status(404).json({ error: "Vehicles not found" });
+    }
+    res.status(200).json({ vehicles });
+  } catch (error) {
+    next(new ErrorResponse("Server error", 500));
+  }
+};
+
 // Create a new vehicle (Admin)
 const createVehicle = async (req, res, next) => {
   const {
@@ -45,7 +61,7 @@ const createVehicle = async (req, res, next) => {
   }
 };
 
-// Get all vehicles
+// Get all filtered vehicles
 const getVehicles = async (req, res, next) => {
   const { carType, gte, lte } = req.query;
 
@@ -118,7 +134,21 @@ const getVehicleById = async (req, res, next) => {
 };
 
 // Update a vehicle (Admin)
-const updateVehicle = async (req, res) => {
+const updateVehicle = async (req, res, next) => {
+  const { name, carType, fuelType, transmission, seats, pricePerHour } =
+    req.body;
+  if (
+    !name ||
+    !carType ||
+    !fuelType ||
+    !transmission ||
+    !seats ||
+    !pricePerHour
+  )
+    return res.status(400).json({
+      error:
+        "name, carType, fuelType, transmission, seats and pricePerHour are required",
+    });
   try {
     const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -138,7 +168,7 @@ const deleteVehicle = async (req, res, next) => {
   try {
     const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ msg: "Vehicle not found" });
+      return res.status(404).json({ error: "Vehicle not found" });
     }
     res.status(200).json({ msg: "Vehicle removed" });
   } catch (err) {
@@ -152,4 +182,5 @@ module.exports = {
   getVehicleById,
   updateVehicle,
   deleteVehicle,
+  getAllVehicles,
 };
