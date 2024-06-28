@@ -57,8 +57,8 @@ const createPayment = async (req, res, next) => {
       user: req.user._id,
       startDate,
       endDate,
-      startTime,
-      endTime,
+      startTime: start,
+      endTime: end,
       tripProtectionFee,
       totalPrice: req.body.items[0].totalPrice,
       paymentStatus: "pending", // Set status to pending initially
