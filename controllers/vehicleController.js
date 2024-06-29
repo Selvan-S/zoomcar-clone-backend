@@ -3,7 +3,7 @@ const Vehicle = require("../models/Vehicle");
 const ErrorResponse = require("../utils/errorResponse");
 const { default: mongoose } = require("mongoose");
 
-// Get all vehicles. Get vehicles by query.
+// Get all vehicles. Get vehicles by query. (Admin)
 const getAllVehicles = async (req, res, next) => {
   const { vehicleName } = req.query;
   try {
@@ -19,7 +19,27 @@ const getAllVehicles = async (req, res, next) => {
   }
 };
 
-// Create a new vehicle (Admin)
+// Get unapproved vehicles
+const getUnapproved = async (req, res, next) => {
+  try {
+    let pipeline = [{ $match: { hostCarStatus: "unapproved" } }];
+
+    const vehicles = await Vehicle.aggregate(pipeline);
+    if (!vehicles.length) {
+      return res.status(404).json({ error: "No unapproved vehicles found" });
+    }
+    const populateUser = await User.populate(vehicles, {
+      path: "user",
+      select: "-password",
+      strictPopulate: false,
+    });
+    res.status(200).json({ vehicles: populateUser });
+  } catch (error) {
+    next(new ErrorResponse("Server error", 500));
+  }
+};
+
+// Create a new vehicle
 const createVehicle = async (req, res, next) => {
   const {
     name,
@@ -46,6 +66,7 @@ const createVehicle = async (req, res, next) => {
   try {
     const vehicle = new Vehicle({
       name,
+      user: req.user._id,
       hostCarImage,
       carType,
       fuelType,
@@ -77,14 +98,19 @@ const getVehicles = async (req, res, next) => {
   if (carType) {
     const seperateCarType = carType.split(",");
     pipeline.push({
-      $match: { carType: { $in: seperateCarType } },
+      $match: {
+        $and: [
+          { carType: { $in: seperateCarType } },
+          { hostCarStatus: "approved" },
+        ],
+      },
     });
   }
 
   pipeline.push({ $match: pricePerHourQuery });
 
   if (pipeline.length === 1) {
-    pipeline.unshift({ $match: {} });
+    pipeline.unshift({ $match: { hostCarStatus: "approved" } });
   }
 
   pipeline.push();
@@ -135,29 +161,15 @@ const getVehicleById = async (req, res, next) => {
 
 // Update a vehicle (Admin)
 const updateVehicle = async (req, res, next) => {
-  const { name, carType, fuelType, transmission, seats, pricePerHour } =
-    req.body;
-  if (
-    !name ||
-    !carType ||
-    !fuelType ||
-    !transmission ||
-    !seats ||
-    !pricePerHour
-  )
-    return res.status(400).json({
-      error:
-        "name, carType, fuelType, transmission, seats and pricePerHour are required",
-    });
   try {
     const vehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
     if (!vehicle) {
-      return res.status(404).json({ msg: "Vehicle not found" });
+      return res.status(404).json({ error: "Vehicle not found" });
     }
-    res.status(200).json(vehicle);
+    res.status(200).json({ msg: "Successfully updated", vehicle });
   } catch (err) {
     next(new ErrorResponse("Server error", 500));
   }
@@ -183,4 +195,5 @@ module.exports = {
   updateVehicle,
   deleteVehicle,
   getAllVehicles,
+  getUnapproved,
 };

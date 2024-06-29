@@ -7,11 +7,13 @@ const {
   updateVehicle,
   deleteVehicle,
   getAllVehicles,
+  getUnapproved,
 } = require("../controllers/vehicleController");
 const { protect, admin } = require("../middleware/authMiddleware");
 
-router.route("/").post(protect, admin, createVehicle).get(getVehicles);
+router.route("/").post(protect, createVehicle).get(getVehicles);
 router.route("/getAllVehicles").get(protect, admin, getAllVehicles);
+router.route("/getUnapprovedVehicles").get(protect, admin, getUnapproved);
 
 router
   .route("/:id")

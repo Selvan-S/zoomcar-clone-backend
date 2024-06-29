@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const imgur = require("imgur");
+const Vehicle = require("../models/Vehicle");
 
 // Reads the upload paths in uploads folder (Not working in Render)
 function createReadStream(uploadPath) {
@@ -96,7 +97,7 @@ const forgotPassword = async (req, res) => {
     <p>Click on the reset link, it will redirects to password reset page:</p>
     <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
   `;
-// Sent password rest link email to the registered user
+  // Sent password rest link email to the registered user
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -163,9 +164,25 @@ const resetPassword = async (req, res) => {
   });
 };
 
+// Ger User hosted vehicle status
+// Get unapproved vehicles
+const getUserHostedVehicleStatus = async (req, res, next) => {
+  try {
+    const hostedVehicles = await Vehicle.find({ user: req.user._id });
+    if (!hostedVehicles.length) {
+      return res.status(404).json({ error: "No hosted vehicles found" });
+    }
+
+    res.status(200).json({ msg: "success", vehicles: hostedVehicles });
+  } catch (error) {
+    next(new ErrorResponse("Server error", 500));
+  }
+};
+
 module.exports = {
   updateUserDetails,
   forgotPassword,
   resetPassword,
   uploadImg,
+  getUserHostedVehicleStatus,
 };

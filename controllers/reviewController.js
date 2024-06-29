@@ -5,7 +5,12 @@ const Vehicle = require("../models/Vehicle");
 // Get reviews
 const getReviews = async (req, res, next) => {
   try {
-    const reviews = await Review.find().populate("user vehicle");
+    const reviews = await Review.find({ user: req.user._id }).populate(
+      "user vehicle"
+    );
+    if (!reviews.length) {
+      return res.status(404).json({ error: "No reviews found" });
+    }
     res.status(200).json(reviews);
   } catch (error) {
     next(new ErrorResponse("Server error", 500));

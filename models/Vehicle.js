@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const VehicleSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   hostCarImage: { type: Array, default: [] },
   carType: {
     type: String,
@@ -17,6 +18,12 @@ const VehicleSchema = new mongoose.Schema({
   seats: { type: String, enum: [5, 7], required: true },
   availability: { type: Boolean, default: true },
   pricePerHour: { type: Number, required: true },
+  hostCarStatus: {
+    type: String,
+    enum: ["unapproved", "approved", "rejected"],
+    default: "unapproved",
+    required: true,
+  },
   createdAt: { type: Date, default: Date.now },
 });
 
