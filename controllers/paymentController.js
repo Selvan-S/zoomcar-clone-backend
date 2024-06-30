@@ -20,6 +20,7 @@ const createPayment = async (req, res, next) => {
     const start = new Date(startTime);
     const end = new Date(endTime);
 
+    // Query to check the time overlapping
     const pipeline = [
       {
         $match: {

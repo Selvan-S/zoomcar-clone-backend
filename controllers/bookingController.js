@@ -2,7 +2,7 @@ const Booking = require("../models/Booking");
 const Vehicle = require("../models/Vehicle");
 const ErrorResponse = require("../utils/errorResponse");
 
-const getBookings = async (req, res) => {
+const getBookings = async (req, res, next) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
       .populate({
@@ -18,7 +18,7 @@ const getBookings = async (req, res) => {
   }
 };
 
-const createBooking = async (req, res) => {
+const createBooking = async (req, res, next) => {
   const { vehicleId, userId, startDate, endDate, totalPrice } = req.body;
 
   try {
