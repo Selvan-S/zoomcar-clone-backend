@@ -78,7 +78,7 @@ const InsertSignUpUser = async (req, res) => {
         content
       );
       await newUser.save();
-      return res.status(200).send(`<h4> Hi, there </h4>
+      return res.status(200).send(`<h3> Hi ${newUser.name}, </h3>
       <p>You are successfully registered</p>
       <p>Please login</p>
       <p>Regards</p>
