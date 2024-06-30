@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const imgur = require("imgur");
 const Vehicle = require("../models/Vehicle");
+const { sendMail } = require("./SendMail");
 
 // Reads the upload paths in uploads folder (Not working in Render)
 function createReadStream(uploadPath) {
@@ -99,30 +100,7 @@ const forgotPassword = async (req, res) => {
   `;
   // Sent password rest link email to the registered user
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    transporter.sendMail(
-      {
-        from: process.env.EMAIL_USERNAME,
-        to: user.email,
-        subject: "Zoomcar clone - Password Reset Request",
-        html: message,
-      },
-      (error, info) => {
-        if (error) {
-          console.log("Error: ", error);
-          return res.status(500).json({ error: "Email could not be sent" });
-        }
-        console.log("Message %s sent: %s", info.messageId, info.response);
-        res.status(200).json({ success: true, data: "Email sent" });
-      }
-    );
+    sendMail(user.email, "Zoomcar clone - Password Reset Request", message);
   } catch (err) {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
